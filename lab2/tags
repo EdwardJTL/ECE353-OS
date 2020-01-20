@@ -1,0 +1,30 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+BLOCKED	Thread.h	/^  enum JUST_CREATED, READY, RUNNING, BLOCKED, UNUSED      -- Thread status$/;"	v	typeref:enum:
+READY	Thread.h	/^  enum JUST_CREATED, READY, RUNNING, BLOCKED, UNUSED      -- Thread status$/;"	v	typeref:enum:
+RUNNING	Thread.h	/^  enum JUST_CREATED, READY, RUNNING, BLOCKED, UNUSED      -- Thread status$/;"	v	typeref:enum:
+SYSTEM_STACK_SIZE	Thread.h	/^    SYSTEM_STACK_SIZE = 1000       -- in words$/;"	v
+System	Main.h	/^  uses System, Thread, Synch$/;"	v
+System	Thread.h	/^  uses System, List$/;"	v
+Thread	Main.h	/^  uses System, Thread, Synch$/;"	v
+equal	System.c	/^      -- less-than, equal, or greater-than s2.$/;"	v
+execute	Thread.c	/^    -- After exit, we can execute "Yield", "Fork", etc.  Upon return, the$/;"	v
+first	Main.c	/^    -- To achieve the right order, we print the operation first, skip to$/;"	v
+integer	Main.c	/^  -- the mutex, computes a while, increments the integer, prints the new value,$/;"	v
+j	Main.c	/^        i, j, k: int$/;"	v
+line	Main.c	/^  -- character from the buffer, it will print a line, showing the buffer contents$/;"	v
+middle	Main.c	/^      -- this, the other threads might print in the middle, causing a mess.$/;"	v
+oldIntStat	Thread.c	/^          oldIntStat = SetInterruptsTo (DISABLED)$/;"	v
+p	Main.c	/^      p = null$/;"	v
+several	Main.c	/^  -- "producers", several "consumers", and a single shared buffer.$/;"	v
+s	Main.c	/^  -- however, there will be five "A"s, five "B"s, five "C"s, etc.$/;"	v
+sz	System.c	/^      sz = Min (s1 arraySize, s2 arraySize)$/;"	v
+th2	Main.c	/^  var th1, th2, th3, th4, th5, th6: Thread$/;"	v
+th3	Main.c	/^  var th1, th2, th3, th4, th5, th6: Thread$/;"	v
+th4	Main.c	/^  var th1, th2, th3, th4, th5, th6: Thread$/;"	v
+th5	Main.c	/^  var th1, th2, th3, th4, th5, th6: Thread$/;"	v
+value	Main.c	/^  -- the mutex, computes a while, increments the integer, prints the new value,$/;"	v
