@@ -145,16 +145,16 @@ code Main
       PrintReadyList ()
       currentThread.Print()
 
-/*
+
       -- Put this thread to sleep...
-      oldStatus = SetInterruptsTo (DISABLED)
-      print ("About to Sleep main thread...\n")
-      currentThread.Sleep ()
-      FatalError ("BACK FROM SLEEP !?!?!")
+      -- oldStatus = SetInterruptsTo (DISABLED)
+      -- print ("About to Sleep main thread...\n")
+      -- currentThread.Sleep ()
+      -- FatalError ("BACK FROM SLEEP !?!?!")
       -- Execution will never reach this point, since the current thread
       -- was not placed on any list of waiting threads.  Nothing in this
       -- code could ever move this thread back to the ready list.
-*/
+
 
       ThreadFinish ()
 
@@ -169,7 +169,7 @@ code Main
 
         if j == 20
           -- Next is an example of aborting all threads and shutting down...
-          --   FatalError ("Whoops...(SAMPLE ERROR MESSAGE)")
+          -- FatalError ("Whoops...(SAMPLE ERROR MESSAGE)")
 
           -- Next is an example of just quietly shutting down...
           --   RuntimeExit ()

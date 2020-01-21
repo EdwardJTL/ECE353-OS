@@ -114,6 +114,7 @@ _Global_th6:
 _Global_myLock:
 ! Static object
 	.word	_P_Synch_Mutex
+	.word	0
 _Global_sharedInt:
 	.word	0
 _Global_thArr:
@@ -15713,9 +15714,9 @@ _Label_43:
 	.import	_CheckVersion_P_Thread_
 	cmp	r1,0
 	bne	_Label_44
-! Make sure _P_Synch_ has hash value 0xe53f1dee (decimal -448848402)
+! Make sure _P_Synch_ has hash value 0xc5e17773 (decimal -975079565)
 	set	_packageName,r2
-	set	0xe53f1dee,r3
+	set	0xc5e17773,r3
 	call	_CheckVersion_P_Synch_
 	.import	_CheckVersion_P_Synch_
 	cmp	r1,0

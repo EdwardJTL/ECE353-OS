@@ -95,7 +95,8 @@ code Synch
       ----------  Mutex . Init  ----------
 
       method Init ()
-          FatalError ("Unimplemented method")
+          heldBy = null  
+          -- FatalError ("Unimplemented method")
         endMethod
 
       ----------  Mutex . Lock  ----------
