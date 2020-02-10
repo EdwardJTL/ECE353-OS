@@ -95,26 +95,61 @@ code Synch
       ----------  Mutex . Init  ----------
 
       method Init ()
-          heldBy = null  
+          heldBy = null 
+          waitingThreads = new List [Thread]
+          held = false
           -- FatalError ("Unimplemented method")
         endMethod
 
       ----------  Mutex . Lock  ----------
 
       method Lock ()
-          FatalError ("Unimplemented method")
+          var oldIntStat: int
+          oldIntStat = SetInterruptsTo (DISABLED)
+          if self.IsHeldByCurrentThread()
+            FatalError ("Current thread already holds mutex lock")
+          endIf
+          if held == false
+            heldBy = currentThread
+            held = true
+          else
+            waitingThreads.AddToEnd (currentThread)
+            currentThread.Sleep ()
+          endIf
+          --FatalError ("Unimplemented method")
+          oldIntStat = SetInterruptsTo (oldIntStat)
         endMethod
 
       ----------  Mutex . Unlock  ----------
 
       method Unlock ()
-          FatalError ("Unimplemented method")
+          var 
+            oldIntStat: int
+            nextThread: ptr to Thread  
+          oldIntStat = SetInterruptsTo (DISABLED)
+          if heldBy != currentThread
+            FatalError ("Mutex lock not held by current thread")
+          endIf
+          nextThread = waitingThreads.Remove()
+          if nextThread
+            nextThread.status = READY
+            readyList.AddToEnd(nextThread)
+            heldBy = nextThread
+          else
+            heldBy = null
+            held = false
+          endIf
+          oldIntStat = SetInterruptsTo (oldIntStat)
+          --FatalError ("Unimplemented method")
         endMethod
 
       ----------  Mutex . IsHeldByCurrentThread  ----------
 
       method IsHeldByCurrentThread () returns bool
-          FatalError ("Unimplemented method")
+          --FatalError ("Unimplemented method")
+          if currentThread == heldBy
+            return true
+          endIf
           return false
         endMethod
 

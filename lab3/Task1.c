@@ -2,8 +2,8 @@ code Main
 
   -- OS Class: Project 3
   --
-  -- <PUT YOUR NAME HERE>
-  --
+  -- Jun Tai Luo
+  -- 1003830526 
 
   -- This package contains the following:
   --     Dining Philospohers
@@ -105,6 +105,8 @@ code Main
     superclass Object
     fields
       status: array [5] of int -- For each philosopher: HUNGRY, EATING, or THINKING
+      condVar: Condition
+      lock: Mutex
     methods
       Init ()
       PickupForks (p: int)
@@ -116,17 +118,46 @@ code Main
 
     method Init ()
       -- Initialize so that all philosophers are THINKING.
-      -- ...unimplemented...
+      status = new array of int {5 of THINKING}
+      -- Initialize mutex lock and conditional variable
+      lock = new Mutex
+      condVar = new Condition
+
+      lock.Init ()
+      condVar.Init ()
+
       endMethod
 
     method PickupForks (p: int)
       -- This method is called when philosopher 'p' wants to eat.
-      -- ...unimplemented...
+      var
+         l: int
+         r: int
+      lock.Lock()
+      status [p] = HUNGRY
+      self.PrintAllStatus ()
+
+      l = (p + 4)%5
+      r = (p + 1)%5
+
+      -- Check if the two forks are available by checking the neighbours' status
+      while ((status[l] == EATING) || (status[r] == EATING))
+         condVar.Wait(&lock)
+      endWhile
+
+      status [p] = EATING
+      self.PrintAllStatus ()
+      lock.Unlock()
+
       endMethod
 
     method PutDownForks (p: int)
       -- This method is called when the philosopher 'p' is done eating.
-      -- ...unimplemented...
+      lock.Lock()
+      status [p] = THINKING
+      self.PrintAllStatus ()
+      condVar.Signal(&lock)
+      lock.Unlock()
       endMethod
 
     method PrintAllStatus ()

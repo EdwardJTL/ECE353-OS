@@ -28,9 +28,9 @@ code Main
       -----  Uncomment any one of the following to perform the desired test  -----
 
       -- SimpleThreadExample ()
-      MoreThreadExamples ()
+      -- MoreThreadExamples ()
       -- TestMutex ()
-      -- ProducerConsumer ()
+      ProducerConsumer ()
 
       ThreadFinish ()
 
@@ -145,16 +145,16 @@ code Main
       PrintReadyList ()
       currentThread.Print()
 
-
+/*
       -- Put this thread to sleep...
-      -- oldStatus = SetInterruptsTo (DISABLED)
-      -- print ("About to Sleep main thread...\n")
-      -- currentThread.Sleep ()
-      -- FatalError ("BACK FROM SLEEP !?!?!")
+      oldStatus = SetInterruptsTo (DISABLED)
+      print ("About to Sleep main thread...\n")
+      currentThread.Sleep ()
+      FatalError ("BACK FROM SLEEP !?!?!")
       -- Execution will never reach this point, since the current thread
       -- was not placed on any list of waiting threads.  Nothing in this
       -- code could ever move this thread back to the ready list.
-
+*/
 
       ThreadFinish ()
 
@@ -169,7 +169,7 @@ code Main
 
         if j == 20
           -- Next is an example of aborting all threads and shutting down...
-          -- FatalError ("Whoops...(SAMPLE ERROR MESSAGE)")
+          --   FatalError ("Whoops...(SAMPLE ERROR MESSAGE)")
 
           -- Next is an example of just quietly shutting down...
           --   RuntimeExit ()
@@ -315,9 +315,20 @@ code Main
     bufferNextIn: int = 0
     bufferNextOut: int = 0
     thArray: array [8] of Thread = new array of Thread { 8 of new Thread }
+    full: Semaphore
+    empty: Semaphore
+    -- mutex: Semaphore
+    mutex: Mutex
 
   function ProducerConsumer ()
-
+      full = new Semaphore
+      full.Init(0)
+      empty = new Semaphore
+      empty.Init(BUFFER_SIZE)
+      -- mutex = new Semaphore
+      -- mutex.Init(1)
+      mutex = new Mutex
+      mutex.Init()
       print ("     ")
 
       thArray[0].Init ("Consumer-1                               |      ")
@@ -353,7 +364,9 @@ code Main
         c: char = intToChar ('A' + myId - 1)
       for i = 1 to 5
         -- Perform synchroniztion...
-
+        empty.Down()
+        -- mutex.Down()
+        mutex.Lock()
         -- Add c to the buffer
         buffer [bufferNextIn] = c
         bufferNextIn = (bufferNextIn + 1) % BUFFER_SIZE
@@ -363,7 +376,9 @@ code Main
         PrintBuffer (c)
 
         -- Perform synchronization...
-
+        -- mutex.Up()
+        mutex.Unlock()
+        full.Up()
       endFor
     endFunction
 
@@ -372,7 +387,9 @@ code Main
         c: char
       while true
         -- Perform synchroniztion...
-
+        full.Down()
+        -- mutex.Down()
+        mutex.Lock()
         -- Remove next character from the buffer
         c = buffer [bufferNextOut]
         bufferNextOut = (bufferNextOut + 1) % BUFFER_SIZE
@@ -382,7 +399,9 @@ code Main
         PrintBuffer (c)
 
         -- Perform synchronization...
-
+        -- mutex.Up()
+        mutex.Unlock()
+        empty.Up()
       endWhile
     endFunction
 
