@@ -7197,13 +7197,13 @@ _Label_231:
 !   Prepare Argument: offset=12  value=_temp_184  sizeInBytes=4
 	load	[r14+-20],r1
 	store	r1,[r15+4]
-!   Send message Signal
+!   Send message Broadcast
 	load	[r14+-16],r1
 	load	[r1],r2
 	cmp	r2,0
 	be	 _runtimeErrorUninitializedObject
 	store	r1,[r15]
-	add	r2,12,r2
+	add	r2,16,r2
 	call	r2
 ! SEND STATEMENT...
 	mov	160,r13		! source line 160

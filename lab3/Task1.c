@@ -156,7 +156,7 @@ code Main
       lock.Lock()
       status [p] = THINKING
       self.PrintAllStatus ()
-      condVar.Signal(&lock)
+      condVar.Broadcast(&lock)
       lock.Unlock()
       endMethod
 

@@ -185,14 +185,11 @@ code Main
             -- leaving
             barberDone.Down()
             accessLock.Lock()
-            self.customerStatus[i] = 'L'
-            self.printCustomerStatus(i)
-            accessLock.Unlock()
-         else
-            self.customerStatus[i] = 'L'
-            self.printCustomerStatus(i)
-            accessLock.Unlock()
          endIf
+         
+         self.customerStatus[i] = 'L'
+         self.printCustomerStatus(i)
+         accessLock.Unlock()
 
          attempts = attempts + 1
          currentThread.Yield()

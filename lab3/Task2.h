@@ -3,7 +3,7 @@ header Main
   uses System, Thread, Synch
 
   const
-    nrCustomers = 10
+    nrCustomers = 3
     nrChairs = 5
 
   functions

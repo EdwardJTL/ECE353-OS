@@ -689,9 +689,27 @@ code Kernel
         --
         -- This method is called once at kernel startup time to initialize
         -- the one and only "ThreadManager" object.
-        -- 
+        --
+          var i: int --location variable for loop 
           print ("Initializing Thread Manager...\n")
           -- NOT IMPLEMENTED
+          -- initialize variables
+          threadTable = new array of Thread {MAX_NUMBER_OF_PROCESSES of new Thread}
+          freeList = new List[Thread]
+          threadManagerLock = new Mutex
+          aThreadBecameFree = new Condition
+
+          -- initialize each thread to unused
+          for i = 0 to MAX_NUMBER_OF_PROCESSES-1
+            threadTable[i].Init("")
+            threadTable[i].status = UNUSED
+            freeList.AddToEnd(&threadTable[i])
+          endFor
+            
+          -- initialize mutex lock and conditional variable
+          threadManagerLock.Init()
+          aThreadBecameFree.Init()
+
         endMethod
 
       ----------  ThreadManager . Print  ----------
@@ -723,9 +741,27 @@ code Kernel
         -- 
         -- This method returns a new Thread; it will wait
         -- until one is available.
-        -- 
-          -- NOT IMPLEMENTED
-          return null
+        --
+          -- local variable declaration
+          var rThreadPtr: ptr to Thread
+
+          -- enter the monitor
+          threadManagerLock.Lock()
+
+          -- try to acquire a thread from freeList.
+          -- wait on freeList with conditional Variable (MESA)
+
+          while freeList.IsEmpty()
+            aThreadBecameFree.Wait(&threadManagerLock)
+          endWhile
+
+          -- freeList is not empty, continue
+          rThreadPtr = freeList.Remove()
+          rThreadPtr.status = JUST_CREATED
+
+          -- free mutex lock
+          threadManagerLock.Unlock()
+          return rThreadPtr
         endMethod
 
       ----------  ThreadManager . FreeThread  ----------
@@ -735,7 +771,18 @@ code Kernel
         -- This method is passed a ptr to a Thread;  It moves it
         -- to the FREE list.
         -- 
-          -- NOT IMPLEMENTED
+          -- enter monitor
+          threadManagerLock.Lock()
+
+          -- set thread status to UNUSED and move thread to free list
+          th.status = UNUSED
+          freeList.AddToEnd(th)
+
+          -- signal on conditional variable to wake up waiting getThread methods
+          aThreadBecameFree.Broadcast(&threadManagerLock)
+
+          -- Exit monitor
+          threadManagerLock.Unlock()
         endMethod
 
     endBehavior
@@ -823,7 +870,31 @@ code Kernel
         -- This method is called once at kernel startup time to initialize
         -- the one and only "processManager" object.  
         --
-        -- NOT IMPLEMENTED
+
+        -- local variable
+        var i: int
+
+        -- Initialize processTable array and freeList
+        processTable = new array of ProcessControlBlock {MAX_NUMBER_OF_PROCESSES of new ProcessControlBlock}
+        freeList = new List[ProcessControlBlock]
+
+        for i = 0 to MAX_NUMBER_OF_PROCESSES-1
+         processTable[i].Init()
+         processTable[i].status = FREE
+         freeList.AddToEnd(&processTable[i])
+        endFor
+
+        -- Initialize monitor
+        processManagerLock = new Mutex
+        aProcessBecameFree = new Condition
+        aProcessDied = new Condition
+
+        processManagerLock.Init()
+        aProcessBecameFree.Init()
+        aProcessDied.Init()
+        
+        nextPid = 0
+
         endMethod
 
       ----------  ProcessManager . Print  ----------
@@ -878,8 +949,29 @@ code Kernel
         -- This method returns a new ProcessControlBlock; it will wait
         -- until one is available.
         --
-          -- NOT IMPLEMENTED
-          return null
+          -- return variable
+          var rProcessPtr: ptr to ProcessControlBlock
+          
+          -- Enter monitor
+          processManagerLock.Lock()
+
+          -- wait on free resource using conditional variable (MESA)
+          while freeList.IsEmpty()
+            aProcessBecameFree.Wait(&processManagerLock)
+          endWhile
+
+          -- acquire and initialize free process control block
+          rProcessPtr = freeList.Remove()
+          rProcessPtr.status = ACTIVE
+          rProcessPtr.pid = nextPid
+
+          -- increment pid for next process
+          nextPid = nextPid + 1
+
+          -- exit monitor
+          processManagerLock.Unlock()
+
+          return rProcessPtr
         endMethod
 
       ----------  ProcessManager . FreeProcess  ----------
@@ -889,7 +981,18 @@ code Kernel
         -- This method is passed a ptr to a Process;  It moves it
         -- to the FREE list.
         --
-          -- NOT IMPLEMENTED
+          -- enter monitor
+          processManagerLock.Lock()
+
+          -- set status to free and append to freeList
+          p.status = FREE
+          freeList.AddToEnd(p)
+
+          -- signal waiting get process methods
+          aProcessBecameFree.Broadcast(&processManagerLock)
+
+          -- exit monitor
+          processManagerLock.Unlock()
         endMethod
 
 
@@ -997,13 +1100,60 @@ code Kernel
       ----------  FrameManager . GetNewFrames  ----------
 
       method GetNewFrames (aPageTable: ptr to AddrSpace, numFramesNeeded: int)
-          -- NOT IMPLEMENTED
+          -- local variables
+          var i, newFrameIndex, newFrameAddr: int
+          
+          -- Enter Monitor
+          frameManagerLock.Lock()
+
+          -- wait on new frames available until there is enough (MESA)
+          while numberFreeFrames < numFramesNeeded
+            newFramesAvailable.Wait(&frameManagerLock)
+          endWhile
+
+          -- loop through each frame
+          for i = 0 to numFramesNeeded - 1
+            -- find empty frame in bitmap, set to 1, and return index
+            newFrameIndex = framesInUse.FindZeroAndSet()
+            -- find address of free frame
+            newFrameAddr = PHYSICAL_ADDRESS_OF_FIRST_PAGE_FRAME + (newFrameIndex * PAGE_SIZE)
+            -- store address of allocated frame
+            aPageTable.SetFrameAddr(i, newFrameAddr)
+            numberFreeFrames = numberFreeFrames - 1
+          endFor
+
+          aPageTable.numberOfPages = numFramesNeeded
+
+          frameManagerLock.Unlock()
+
         endMethod
 
       ----------  FrameManager . ReturnAllFrames  ----------
 
       method ReturnAllFrames (aPageTable: ptr to AddrSpace)
-          -- NOT IMPLEMENTED
+          -- local variables
+          var i, frameAddr, bitNumber, numFramesReturned: int
+          -- enter monitor
+          frameManagerLock.Lock()
+
+          numFramesReturned = aPageTable.numberOfPages
+
+          -- loop through each frame
+          for i = 0 to numFramesReturned - 1
+            frameAddr = aPageTable.ExtractFrameAddr(i)
+            bitNumber = (frameAddr - PHYSICAL_ADDRESS_OF_FIRST_PAGE_FRAME)/PAGE_SIZE
+            framesInUse.ClearBit(bitNumber)
+          endFor
+
+          -- increase the number of free pages and wake up waiting threads
+          numberFreeFrames = numberFreeFrames + numFramesReturned
+          aPageTable.numberOfPages = 0
+
+          newFramesAvailable.Broadcast(&frameManagerLock)
+          
+          -- exit monitor
+          frameManagerLock.Unlock()
+
         endMethod
 
     endBehavior
