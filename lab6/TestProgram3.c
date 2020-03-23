@@ -25,7 +25,7 @@ code TestProgram3
 
 
       --SysExitTest ()
-      BasicForkTest ()
+      --BasicForkTest ()
       --YieldTest ()
       --ForkTest ()
       --JoinTest1 ()
@@ -35,7 +35,7 @@ code TestProgram3
       --ManyProcessesTest1 ()
       --ManyProcessesTest2 ()
       --ManyProcessesTest3 ()
-      --ErrorTest ()
+      ErrorTest ()
 
       Sys_Exit (0)
     endFunction
